@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>나만의 영화 티어리스트</title>
+    <style>
+        /* 1. 디자인: 넷플릭스 스타일 다크 모드 */
+        body {
+            background-color: #141414;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 { color: #E50914; } /* 넷플릭스 레드 포인트 */
+
+        /* 티어표 레이아웃 */
+        .tier-container {
+            width: 90%;
+            max-width: 800px;
+            margin-bottom: 30px;
+        }
+
+        .tier-row {
+            display: flex;
+            border: 1px solid #333;
+            min-height: 120px;
+            margin-bottom: 5px;
+        }
+
+        .tier-label {
+            width: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* 티어별 색상 */
+        .s-tier { background-color: #ff7f7f; }
+        .a-tier { background-color: #ffbf7f; }
+        .b-tier { background-color: #ffff7f; }
+        .c-tier { background-color: #7f7fff; }
+
+        .drop-zone {
+            flex-grow: 1;
+            display: flex;
+            flex-wrap: wrap;
+            padding: 10px;
+            gap: 10px;
+        }
+
+        /* 보관함 레이아웃 */
+        .storage {
+            width: 90%;
+            max-width: 800px;
+            border: 2px dashed #444;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 15px;
+            min-height: 150px;
+        }
+
+        /* 영화 포스터 스타일 */
+        .movie-poster {
+            width: 100px;
+            height: 150px;
+            cursor: grab;
+            background-color: #333;
+            border-radius: 4px;
+            object-fit: cover;
+            transition: transform 0.2s;
+        }
+
+        .movie-poster:active { cursor: grabbing; }
+        .movie-poster:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+    <h1>MY MOVIE TIER LIST</h1>
+
+    <!-- 상단 티어표 -->
+    <div class="tier-container">
+        <div class="tier-row">
+            <div class="tier-label s-tier">S</div>
+            <div class="drop-zone" id="s-tier-zone"></div>
+        </div>
+        <div class="tier-row">
+            <div class="tier-label a-tier">A</div>
+            <div class="drop-zone" id="a-tier-zone"></div>
+        </div>
+        <div class="tier-row">
+            <div class="tier-label b-tier">B</div>
+            <div class="drop-zone" id="b-tier-zone"></div>
+        </div>
+        <div class="tier-row">
+            <div class="tier-label c-tier">C</div>
+            <div class="drop-zone" id="c-tier-zone"></div>
+        </div>
+    </div>
+
+    <!-- 하단 보관함 -->
+    <h3>영화 보관함</h3>
+    <div class="storage" id="storage-zone">
+        <!-- 7개의 영화 포스터 (샘플 이미지 사용) -->
+        <img src="https://via.placeholder.com/100x150?text=Movie+1" class="movie-poster" draggable="true" id="movie1">
+        <img src="https://via.placeholder.com/100x150?text=Movie+2" class="movie-poster" draggable="true" id="movie2">
+        <img src="https://via.placeholder.com/100x150?text=Movie+3" class="movie-poster" draggable="true" id="movie3">
+        <img src="https://via.placeholder.com/100x150?text=Movie+4" class="movie-poster" draggable="true" id="movie4">
+        <img src="https://via.placeholder.com/100x150?text=Movie+5" class="movie-poster" draggable="true" id="movie5">
+        <img src="https://via.placeholder.com/100x150?text=Movie+6" class="movie-poster" draggable="true" id="movie6">
+        <img src="https://via.placeholder.com/100x150?text=Movie+7" class="movie-poster" draggable="true" id="movie7">
+    </div>
+
+    <script>
+        const posters = document.querySelectorAll('.movie-poster');
+        const zones = document.querySelectorAll('.drop-zone, .storage');
+
+        // 1. 드래그 시작 시 ID 저장
+        posters.forEach(poster => {
+            poster.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', e.target.id);
+            });
+        });
+
+        // 2. 드롭 허용 설정
+        zones.forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const id = e.dataTransfer.getData('text/plain');
+                const draggedElement = document.getElementById(id);
+                
+                // 드롭된 위치에 요소 추가
+                if (e.target.classList.contains('drop-zone') || e.target.id === 'storage-zone') {
+                    e.target.appendChild(draggedElement);
+                } else {
+                    // 칸 안의 다른 이미지 위에 놓았을 때 그 부모(zone)에 추가
+                    e.target.parentElement.appendChild(draggedElement);
+                }
+                savePositions(); // 위치 저장
+            });
+        });
+
+        // 3. 로컬 스토리지 저장 기능
+        function savePositions() {
+            const data = {};
+            posters.forEach(poster => {
+                data[poster.id] = poster.parentElement.id;
+            });
+            localStorage.setItem('movieTierData', JSON.stringify(data));
+        }
+
+        // 4. 로컬 스토리지 로드 기능
+        function loadPositions() {
+            const savedData = localStorage.getItem('movieTierData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                for (const [movieId, zoneId] of Object.entries(data)) {
+                    const movie = document.getElementById(movieId);
+                    const zone = document.getElementById(zoneId);
+                    if (movie && zone) zone.appendChild(movie);
+                }
+            }
+        }
+
+        window.onload = loadPositions;
+    </script>
+</body>
+</html>
