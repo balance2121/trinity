@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기획서: 영화 티어리스트 (넷플릭스 스타일)</title>
+    <style>
+        :root {
+            --netflix-red: #e50914;
+            --netflix-black: #141414;
+            --netflix-dark-grey: #1f1f1f;
+            --text-white: #ffffff;
+            --text-grey: #b3b3b3;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: var(--netflix-black);
+            color: var(--text-white);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--netflix-dark-grey);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            color: var(--netflix-red);
+            font-size: 2.5rem;
+            border-bottom: 2px solid var(--netflix-red);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h2 {
+            color: var(--netflix-red);
+            font-size: 1.5rem;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2::before {
+            content: '🎬';
+            margin-right: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #2a2a2a;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #444;
+            text-align: left;
+        }
+
+        th {
+            background-color: #333;
+            color: var(--netflix-red);
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #383838;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        ul li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--netflix-red);
+            font-weight: bold;
+        }
+
+        .highlight {
+            color: var(--netflix-red);
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: var(--text-grey);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎬 영화 티어리스트 기획서</h1>
+
+    <h2>1. 기획 개요</h2>
+    <ul>
+        <li><strong>서비스명:</strong> 영화 티어리스트 (Netflix Edition)</li>
+        <li><strong>목적:</strong> 내가 본 영화를 등급(S/A/B/C)으로 나누고, 영화별 정보와 한줄 평가를 기록·관리</li>
+        <li><strong>디자인 컨셉:</strong> 넷플릭스 다크모드 스타일 (Black & Red)</li>
+    </ul>
+
+    <h2>2. 핵심 기능</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>기능</th>
+                <th>설명</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>영화 추가</td>
+                <td>입력 폼을 통해 새로운 영화 데이터를 등록</td>
+            </tr>
+            <tr>
+                <td>포스터 표시</td>
+                <td>이미지 URL을 입력받아 영화 포스터를 시각화</td>
+            </tr>
+            <tr>
+                <td>별점 시스템</td>
+                <td>1~5점 사이의 별점(⭐) 기록 기능</td>
+            </tr>
+            <tr>
+                <td>영화 정보</td>
+                <td>감독, 제작년도, 장르 등 상세 정보 포함</td>
+            </tr>
+            <tr>
+                <td>등급 분류</td>
+                <td>S, A, B, C 티어별 섹션 자동 배치</td>
+            </tr>
+            <tr>
+                <td>데이터 유지</td>
+                <td>로컬스토리지(LocalStorage)를 활용한 데이터 보존</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>3. 화면 구성 요소</h2>
+    <ul>
+        <li><strong>Header:</strong> 서비스 타이틀 및 로고</li>
+        <li><strong>Input Section:</strong> 영화 정보를 입력하는 카드 형태의 폼</li>
+        <li><strong>Tier Board:</strong> S, A, B, C 등급별 가로 행(Row) 구성</li>
+        <li><strong>Movie Card:</strong> 포스터, 제목, 별점, 감독, 장르, 한줄평이 포함된 카드</li>
+    </ul>
+
+    <h2>4. 입력 항목 상세</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>항목</th>
+                <th>입력 방식</th>
+                <th>비고</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>제목</td>
+                <td>텍스트</td>
+                <td>필수 입력</td>
+            </tr>
+            <tr>
+                <td>포스터 URL</td>
+                <td>텍스트(URL)</td>
+                <td>이미지 링크 주소</td>
+            </tr>
+            <tr>
+                <td>별점</td>
+                <td>숫자 (1~5)</td>
+                <td>⭐ 아이콘으로 변환</td>
+            </tr>
+            <tr>
+                <td>감독/년도/장르</td>
+                <td>텍스트/숫자</td>
+                <td>상세 정보</td>
+            </tr>
+            <tr>
+                <td>한줄 평가</td>
+                <td>텍스트</td>
+                <td>나만의 감상평</td>
+            </tr>
+            <tr>
+                <td>등급</td>
+                <td>Select 선택</td>
+                <td>S, A, B, C 중 선택</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>5. 개발 로드맵</h2>
+    <ul>
+        <li>1단계: HTML/CSS 기본 레이아웃 및 넷플릭스 테마 적용</li>
+        <li>2단계: JavaScript를 이용한 영화 추가 로직 구현</li>
+        <li>3단계: 등급별 필터링 및 화면 렌더링 기능 개발</li>
+        <li>4단계: 로컬스토리지 연동 및 예외 처리 (이미지 오류 등)</li>
+    </ul>
+
+    <div class="footer">
+        © 2024 영화 티어리스트 프로젝트 - Codyssey Mission 1
+    </div>
+</div>
+
+</body>
+</html>
