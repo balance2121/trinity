@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>영화 티어리스트</title>
+  <style>
+    /* ===== 기본 설정 (넷플릭스 다크모드) ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #141414;
+      color: #ffffff;
+      font-family: 'Arial', sans-serif;
+      padding: 30px;
+    }
+    h1 { text-align: center; margin-bottom: 30px; color: #e50914; }
+
+    /* ===== 티어표 영역 ===== */
+    .tier-row {
+      display: flex;
+      align-items: stretch;
+      margin-bottom: 10px;
+      min-height: 90px;
+    }
+    .tier-label {
+      width: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: bold;
+      color: #000;
+    }
+    /* 티어별 고유 색상 */
+    .label-S { background-color: #ff7f7f; }
+    .label-A { background-color: #ffbf7f; }
+    .label-B { background-color: #ffff7f; }
+    .label-C { background-color: #7fff7f; }
+
+    .tier-dropzone {
+      flex: 1;
+      background-color: #222;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px;
+      align-items: center;
+    }
+
+    /* ===== 보관함(그리드) 영역 ===== */
+    h2 { margin: 30px 0 15px; }
+    .movie-pool {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      background-color: #1a1a1a;
+      padding: 15px;
+      border-radius: 8px;
+      min-height: 90px;
+    }
+
+    /* ===== 영화 카드 ===== */
+    .movie {
+      height: 70px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 13px;
+      font-weight: bold;
+      color: #000;
+      cursor: grab;
+      padding: 5px;
+      user-select: none;
+    }
+    .movie:active { cursor: grabbing; }
+  </style>
+</head>
+<body>
+
+  <h1>🎬 나의 영화 티어리스트</h1>
+
+  <!-- 티어표 -->
+  <div class="tier-row">
+    <div class="tier-label label-S">S</div>
+    <div class="tier-dropzone" data-tier="S"></div>
+  </div>
+  <div class="tier-row">
+    <div class="tier-label label-A">A</div>
+    <div class="tier-dropzone" data-tier="A"></div>
+  </div>
+  <div class="tier-row">
+    <div class="tier-label label-B">B</div>
+    <div class="tier-dropzone" data-tier="B"></div>
+  </div>
+  <div class="tier-row">
+    <div class="tier-label label-C">C</div>
+    <div class="tier-dropzone" data-tier="C"></div>
+  </div>
+
+  <!-- 보관함 -->
+  <h2>📦 보관함</h2>
+  <div class="movie-pool" data-tier="pool"></div>
+
+  <script>
+    // ===== 영화 데이터 (고정 7개) =====
+    const movies = [
+      { id: "m1", title: "영화 1", color: "#f28b82" },
+      { id: "m2", title: "영화 2", color: "#fbbc04" },
+      { id: "m3", title: "영화 3", color: "#fff475" },
+      { id: "m4", title: "영화 4", color: "#ccff90" },
+      { id: "m5", title: "영화 5", color: "#a7ffeb" },
+      { id: "m6", title: "영화 6", color: "#cbf0f8" },
+      { id: "m7", title: "영화 7", color: "#d7aefb" }
+    ];
+
+    // ===== 영화 카드 생성 =====
+    function createMovie(movie) {
+      const div = document.createElement("div");
+      div.className = "movie";
+      div.textContent = movie.title;
+      div.style.backgroundColor = movie.color;
+      div.draggable = true;         // 드래그 가능하게
+      div.id = movie.id;
+
+      // 드래그 시작 시 어떤 카드인지 기억
+      div.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text/plain", movie.id);
+      });
+      return div;
+    }
+
+    // ===== 드롭존 설정 =====
+    const dropzones = document.querySelectorAll("[data-tier]");
+    dropzones.forEach(zone => {
+      // 기본 동작 막기(이게 있어야 drop이 작동함)
+      zone.addEventListener("dragover", (e) => e.preventDefault());
+
+      // 카드를 놓았을 때
+      zone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const id = e.dataTransfer.getData("text/plain");
+        const card = document.getElementById(id);
+        zone.appendChild(card);     // 해당 영역으로 카드 이동
+        saveState();                // 저장
+      });
+    });
+
+    // ===== 상태 저장 (로컬스토리지) =====
+    function saveState() {
+      const state = {};
+      movies.forEach(m => {
+        const card = document.getElementById(m.id);
+        // 카드가 속한 영역의 tier 값을 저장
+        state[m.id] = card.parentElement.dataset.tier;
+      });
+      localStorage.setItem("tierState", JSON.stringify(state));
+    }
+
+    // ===== 상태 불러오기 =====
+    function loadState() {
+      const saved = localStorage.getItem("tierState");
+      const state = saved ? JSON.parse(saved) : {};
+
+      movies.forEach(m => {
+        const card = createMovie(m);
+        // 저장된 위치가 있으면 그곳에, 없으면 보관함에
+        const tier = state[m.id] || "pool";
+        const target = document.querySelector(`[data-tier="${tier}"]`);
+        target.appendChild(card);
+      });
+    }
+
+    // ===== 시작 =====
+    loadState();
+  </script>
+
+</body>
+</html>
